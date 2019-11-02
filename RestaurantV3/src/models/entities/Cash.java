@@ -1,5 +1,7 @@
 package models.entities;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author Lenovo
@@ -8,6 +10,8 @@ public class Cash {
     
     private Cashier cashier;
     private boolean available;
+    
+    private ArrayList<Order> orders;
 
     public Cash(Cashier cashier, boolean available) {
         this.cashier = cashier;
@@ -34,6 +38,4 @@ public class Cash {
     public void setAvailable(boolean available) {
         this.available = available;
     }
-    
-    
 }

@@ -1,8 +1,6 @@
 package models.entities;
 
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -47,14 +45,7 @@ public class Order {
     }
 
     public double getTotal() {
-        double total = 0;
-        for (PersonalOrder personalOrder : personalOrders) {
-            total = personalOrder.getRankedDishes()
-                    .entrySet().stream()
-                    .map(Map.Entry::getKey).collect(Collectors.toList())
-                    .stream().mapToDouble(o -> o.getPrice()).sum();
-        }
-        return total;
+        return personalOrders.stream().mapToDouble(po -> po.getTotal()).sum();
     }
 
 }

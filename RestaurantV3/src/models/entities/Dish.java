@@ -5,7 +5,7 @@ package models.entities;
  * @author Lenovo
  */
 public class Dish {
-    
+
     private String name;
     private DishType dishType;
     private double price;
@@ -49,4 +49,16 @@ public class Dish {
     public void setCookingTime(double cookingTime) {
         this.cookingTime = cookingTime;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Name: ").append(name).append(System.getProperty("line.separator"))
+                .append("Dish Type: ").append(dishType).append(System.getProperty("line.separator"))
+                .append("Cooking Time: ").append(cookingTime).append(System.getProperty("line.separator"))
+                .append("Price: ").append(price).append(System.getProperty("line.separator"));
+
+        return builder.toString();
+    }
+
 }

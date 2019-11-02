@@ -10,7 +10,6 @@ public enum DishType {
     MAIN(2,"Main Course"),
     DESSERT(3,"Dessert");
 
-
     private int id;
     private String name;
 
@@ -34,4 +33,11 @@ public enum DishType {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
+    
+    
 }
