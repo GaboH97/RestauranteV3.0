@@ -5,15 +5,16 @@ package models.entities;
  * @author Lenovo
  */
 public class Client {
-    
+
+    private static int CLIENT_ID = 1;
     private int id;
     private String name;
     private String genre;
 
-    public Client(int id, String name, String genre) {
-        this.id = id;
-        this.name = name;
-        this.genre = genre;
+    public Client() {
+        this.id = CLIENT_ID++;
+        this.name = "Client " + id;
+        this.genre = Math.random() > 0.5 ? "F" : "M";
     }
 
     public int getId() {
@@ -39,4 +40,11 @@ public class Client {
     public void setGenre(String genre) {
         this.genre = genre;
     }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
+    
+    
 }

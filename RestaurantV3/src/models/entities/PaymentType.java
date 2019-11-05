@@ -1,8 +1,8 @@
 package models.entities;
 
 /**
- *
- * @author Lenovo
+ * 
+ * @author Gabriel Huertas <gabriel970826@gmail.com>
  */
 public enum PaymentType {
     

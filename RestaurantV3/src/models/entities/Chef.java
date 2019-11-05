@@ -7,9 +7,9 @@ import java.util.ArrayList;
  * @author Lenovo
  */
 public class Chef {
-    
+
     public static final int REST_DURATION = 20; //In minutes
-    
+
     private int id;
     private String name;
     private ArrayList<CookingSkill> cookingSkills;
@@ -21,8 +21,12 @@ public class Chef {
         this.cookingSkills = new ArrayList<>();
         this.successRate = successRate;
     }
-    
-    public boolean hasSkill(CookingSkill cookingSkill){
+
+    public void Cook(Dish dish) {
+        //TODO
+    }
+
+    public boolean hasSkill(CookingSkill cookingSkill) {
         return cookingSkills.contains(cookingSkill);
     }
 
@@ -57,4 +61,15 @@ public class Chef {
     public void setSuccessRate(double successRate) {
         this.successRate = successRate;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Name ").append(name).append(System.getProperty("line.separator"))
+                .append("Cooking skills: ").append(System.getProperty("line.separator"));
+        cookingSkills.forEach(cs -> builder.append("\t").append(cs).append(System.getProperty("line.separator")));
+        builder.append("Success rate: ").append(successRate).append(System.getProperty("line.separator"));
+        return builder.toString();
+    }
+
 }

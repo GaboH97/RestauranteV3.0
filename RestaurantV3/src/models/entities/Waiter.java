@@ -1,6 +1,7 @@
 package models.entities;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  *
@@ -9,29 +10,49 @@ import java.util.ArrayList;
 public class Waiter {
 
     public static final int REST_DURATION = 10; //In minutes
-    
+
     private int id;
     private String name;
     private double rate;
-    private ArrayList<Order> orders;
-    private boolean resting;
-    private boolean busy;
+    private WaiterState state;
+    private Queue<Order> takenOrders;
+    
 
-    public Waiter(int id, String name, double rate, boolean resting, boolean busy) {
+    public Waiter(int id, String name, double rate) {
         this.id = id;
         this.name = name;
         this.rate = rate;
-        this.orders = new ArrayList<>();
-        this.resting = resting;
-        this.busy = busy;
+        this.takenOrders = new LinkedList<>();
     }
 
     public Waiter(int id, String name) {
         this.id = id;
         this.name = name;
         this.rate = 0d;
-        this.resting = false;
-        this.busy = false;
+    }
+ 
+    /**
+     * 
+     * @return true if the waiter has only taken 3 orders, otherwise false
+     */
+    public boolean canTakeOrder() {
+        return takenOrders.size() < 3;
+    }
+    
+    /**
+     * 
+     * @param order 
+     */
+    public void takeOrder(Order order){
+        takenOrders.add(order);
+    }
+    
+    /**
+     * 
+     * @return The first order (if present) taken by the waiter in FIFO style
+     */
+    public Order leaveOrder(){
+        return takenOrders.poll();
     }
 
     public int getId() {
@@ -58,28 +79,19 @@ public class Waiter {
         this.rate = rate;
     }
 
-    public ArrayList<Order> getOrders() {
-        return orders;
+    public Queue<Order> getTakenOrders() {
+        return takenOrders;
     }
 
-    public void setOrders(ArrayList<Order> orders) {
-        this.orders = orders;
+    public void setTakenOrders(Queue<Order> takenOrders) {
+        this.takenOrders = takenOrders;
     }
 
-    public boolean isResting() {
-        return resting;
+    public WaiterState getState() {
+        return state;
     }
 
-    public void setResting(boolean resting) {
-        this.resting = resting;
+    public void setState(WaiterState state) {
+        this.state = state;
     }
-
-    public boolean isBusy() {
-        return busy;
-    }
-
-    public void setBusy(boolean busy) {
-        this.busy = busy;
-    }
-
 }

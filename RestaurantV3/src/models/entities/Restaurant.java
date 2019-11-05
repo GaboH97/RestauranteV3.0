@@ -1,35 +1,130 @@
 package models.entities;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
  *
- * @author Lenovo
+ * @author Gabriel Huertas <gabriel970826@gmail.com>
  */
 public final class Restaurant {
+
+    //================= ATTRIBUTES ==========================
     
-    
-    //================= ATTRIBUTES
-    private ArrayList<Dish> menu;
+    public static List<Dish> MENU =  Arrays.asList(
+            //--------------------- MAIN DISHES --------------------------
+            new Dish("Greek Chicken Pasta", DishType.MAIN, 15.10, 35),
+            new Dish("Tuscan Bean Soup", DishType.MAIN, 15.10, 20),
+            new Dish("Yakisoba Noodles", DishType.MAIN, 15.10, 15),
+            new Dish("6-Ingredient Vegan Chickpea Curry", DishType.MAIN, 0, 30),
+            new Dish("Russian Beef Stroganoff", DishType.MAIN, 0, 30),
+            //--------------------- ENTREÉS --------------------------
+            new Dish("Scallops with sweet corn puree, prosciutto and lemon butter", DishType.ENTREE, 0, 10),
+            new Dish("Goat's cheese pissaladiere tarts", DishType.ENTREE, 0, 5),
+            new Dish("Antipasto garlic bread", DishType.ENTREE, 0, 5),
+            new Dish("Crisp-fried cheese ravioli", DishType.ENTREE, 0, 8),
+            new Dish("Crab cakes with dill mayonnaise", DishType.ENTREE, 0, 10),
+            //--------------------- DESSERTS --------------------------
+            new Dish("OREO Cookie Split", DishType.DESSERT, 0, 5),
+            new Dish("Creamy Mochaccino Mousse", DishType.DESSERT, 0, 5),
+            new Dish("Peach Melba Icy Delight", DishType.DESSERT, 0, 8),
+            new Dish("Old Fashioned Sour Cream Doughnuts", DishType.DESSERT, 0, 10),
+            new Dish("Meyer Lemon Bars", DishType.DESSERT, 0, 14),
+            new Dish("Pavlova With Blueberry Jam", DishType.DESSERT, 0, 10),
+            new Dish("Banana Pudding Parfaits", DishType.DESSERT, 0, 8),
+            new Dish("Strawberry, Currant And Mint Tart With Mascarpone", DishType.DESSERT, 0, 10),
+            new Dish("Green Tea Panna Cotta", DishType.DESSERT, 0, 15),
+            new Dish("Strawberry Mousse", DishType.DESSERT, 0, 10)
+    );
+
     private ArrayList<Table> tables;
-    private ArrayList<Order> orders;
-    private Waiter waiter1;
-    private Waiter waiter2;
+    private Kitchen kitchen;
+    private List<Waiter> waiters;
     private Cashier cashier;
     private Cash cash;
 
-    public Restaurant() {
-        this.menu = new ArrayList<>();
-        this.tables = new ArrayList<>();
-        this.orders = new ArrayList<>();
-        this.waiter1 = new Waiter(1, "Pedro");
-        this.waiter2 = new Waiter(2, "Jorge");
+    private Map<Integer, List<Order>> ordersPerDay;
+
+    /**
+     * Clients row waiting to be attended
+     */
+    private Queue<List<Client>> clientsRow;
+
+    /**
+     * Singleton instance
+     */
+    private static Restaurant instance;
+
+    private Restaurant() {
+
+        this.kitchen = new Kitchen();
         this.cashier = new Cashier();
         this.cash = new Cash(cashier);
+
+        this.tables = new ArrayList<>();
+        this.waiters = new ArrayList<>();
+
+        this.clientsRow = new LinkedList<>();
+        this.ordersPerDay = new TreeMap<>();
+
         setUp();
+    }
+
+    /**
+     *
+     * @return A singleton-like instance of this class
+     */
+    public static Restaurant getInstance() {
+        if (instance == null) {
+            instance = new Restaurant();
+        }
+        return instance;
+    }
+
+    /**
+     * Method that starts restaurant simulation
+     */
+    public void start() {
+
+    }
+
+    /**
+     * Clients by themselves are not considered as single arrival units given an
+     * arrival rate. Instead, they are grouped and then these are considered as
+     * single arrival units
+     *
+     * @return A list of clients (diners) ranging between 1 to 5 members
+     */
+    public List<Client> clientsArrival() {
+        return IntStream.rangeClosed(1, new Random().nextInt(Table.MAX_CAPACITY) + 1)
+                .mapToObj(x -> new Client())
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * 
+     * @return Any Waiter whose state is available, otherwise null
+     */
+    public Waiter getAvailableWaiter(){
+       return waiters.stream()
+                .filter(w -> w.getState().equals(WaiterState.AVAILABLE))
+                .findAny().orElse(null);
+    }
+
+    /**
+     *
+     * @return The group of clients (diners) who are at the top of the line
+     */
+    public List<Client> attendClients() {
+        return clientsRow.poll();
     }
 
     public void setUp() {
@@ -37,50 +132,63 @@ public final class Restaurant {
         //Generate 14 tables
         tables.addAll(IntStream.range(0, 14).mapToObj(x -> new Table())
                 .collect(Collectors.toList()));
+
+        generateWaiters();
     }
-    
+
     /**
-     * 
-     * @return First available table, otherwise, null 
+     *
+     * @return First available table, otherwise, null
      */
     public Table getAvailableTable() {
-        return tables.stream().filter(t -> t.isAvailable()).findFirst().orElse(null);
+        return tables.stream()
+                .filter(t -> t.isAvailable())
+                .findFirst()
+                .orElse(null);
     }
 
     public void generateMenu() {
 
-        //--------------------- MAIN DISHES --------------------------
-        menu.add(new Dish("Greek Chicken Pasta", DishType.MAIN, 15.10, 0));
-        menu.add(new Dish("Tuscan Bean Soup", DishType.MAIN, 15.10, 20));
-        menu.add(new Dish("Yakisoba Noodles", DishType.MAIN, 15.10, 15));
-        menu.add(new Dish("6-Ingredient Vegan Chickpea Curry", DishType.MAIN, 0, 30));
-        menu.add(new Dish("Russian Beef Stroganoff", DishType.MAIN, 0, 30));
-
-        //--------------------- ENTREÉS --------------------------
-        menu.add(new Dish("Scallops with sweet corn puree, prosciutto and lemon butter", DishType.ENTREE, 0, 10));
-        menu.add(new Dish("Goat's cheese pissaladiere tarts", DishType.ENTREE, 0, 5));
-        menu.add(new Dish("Antipasto garlic bread", DishType.ENTREE, 0, 5));
-        menu.add(new Dish("Crisp-fried cheese ravioli", DishType.ENTREE, 0, 8));
-        menu.add(new Dish("Crab cakes with dill mayonnaise", DishType.ENTREE, 0, 10));
-
-        //--------------------- DESSERTS --------------------------
-        menu.add(new Dish("OREO Cookie Split", DishType.DESSERT, 0, 5));
-        menu.add(new Dish("Creamy Mochaccino Mousse", DishType.DESSERT, 0, 5));
-        menu.add(new Dish("Peach Melba Icy Delight", DishType.DESSERT, 0, 8));
-        menu.add(new Dish("Old Fashioned Sour Cream Doughnuts", DishType.DESSERT, 0, 10));
-        menu.add(new Dish("Meyer Lemon Bars", DishType.DESSERT, 0, 5));
-        menu.add(new Dish("Pavlova With Blueberry Jam", DishType.DESSERT, 0, 5));
-        menu.add(new Dish("Banana Pudding Parfaits", DishType.DESSERT, 0, 8));
-        menu.add(new Dish("Strawberry, Currant And Mint Tart With Mascarpone", DishType.DESSERT, 0, 10));
-        menu.add(new Dish("Green Tea Panna Cotta", DishType.DESSERT, 0, 5));
-        menu.add(new Dish("Strawberry Mousse", DishType.DESSERT, 0, 5));
+//        //--------------------- MAIN DISHES --------------------------
+//        MENU.add(new Dish("Greek Chicken Pasta", DishType.MAIN, 15.10, 35));
+//        MENU.add(new Dish("Tuscan Bean Soup", DishType.MAIN, 15.10, 20));
+//        MENU.add(new Dish("Yakisoba Noodles", DishType.MAIN, 15.10, 15));
+//        MENU.add(new Dish("6-Ingredient Vegan Chickpea Curry", DishType.MAIN, 0, 30));
+//        MENU.add(new Dish("Russian Beef Stroganoff", DishType.MAIN, 0, 30));
+//
+//        //--------------------- ENTREÉS --------------------------
+//        MENU.add(new Dish("Scallops with sweet corn puree, prosciutto and lemon butter", DishType.ENTREE, 0, 10));
+//        MENU.add(new Dish("Goat's cheese pissaladiere tarts", DishType.ENTREE, 0, 5));
+//        MENU.add(new Dish("Antipasto garlic bread", DishType.ENTREE, 0, 5));
+//        MENU.add(new Dish("Crisp-fried cheese ravioli", DishType.ENTREE, 0, 8));
+//        MENU.add(new Dish("Crab cakes with dill mayonnaise", DishType.ENTREE, 0, 10));
+//
+//        //--------------------- DESSERTS --------------------------
+//        MENU.add(new Dish("OREO Cookie Split", DishType.DESSERT, 0, 5));
+//        MENU.add(new Dish("Creamy Mochaccino Mousse", DishType.DESSERT, 0, 5));
+//        MENU.add(new Dish("Peach Melba Icy Delight", DishType.DESSERT, 0, 8));
+//        MENU.add(new Dish("Old Fashioned Sour Cream Doughnuts", DishType.DESSERT, 0, 10));
+//        MENU.add(new Dish("Meyer Lemon Bars", DishType.DESSERT, 0, 14));
+//        MENU.add(new Dish("Pavlova With Blueberry Jam", DishType.DESSERT, 0, 10));
+//        MENU.add(new Dish("Banana Pudding Parfaits", DishType.DESSERT, 0, 8));
+//        MENU.add(new Dish("Strawberry, Currant And Mint Tart With Mascarpone", DishType.DESSERT, 0, 10));
+//        MENU.add(new Dish("Green Tea Panna Cotta", DishType.DESSERT, 0, 15));
+//        MENU.add(new Dish("Strawberry Mousse", DishType.DESSERT, 0, 10));
     }
-    
+
+    public void generateWaiters() {
+        waiters.addAll(Arrays.asList(
+                new Waiter(0, "José"),
+                new Waiter(1, "Juan")
+        ));
+    }
+
     /**
-     * 
-     * @return a list of dishes which represent a personal order following a set of rules
-     *  The customer always consumes a main course
-     *  The client can request a maximum of one entry and / or two desserts in their respective order.
+     *
+     * @return a list of dishes which represent a personal order following a set
+     * of rules The customer always consumes a main course The client can
+     * request a maximum of one entry and / or two desserts in their respective
+     * order.
      */
     public ArrayList<Dish> generatePersonalOrder() {
 
@@ -96,6 +204,12 @@ public final class Restaurant {
         ArrayList<Dish> entreeDishes = getDishesByType(DishType.ENTREE);
         ArrayList<Dish> dessertDishes = getDishesByType(DishType.DESSERT);
 
+        /**
+         * Complete menu with one of these two options
+         *
+         * 1. One entreé and up to two desserts 
+         * 2. One entreé or up to two desserts
+         */
         if (entreeAndDessert) {
 
             Dish entreeDish = entreeDishes.get(new Random().nextInt(entreeDishes.size()));
@@ -121,18 +235,19 @@ public final class Restaurant {
         return personalOrderDishes;
     }
 
-    public ArrayList<Dish> getDishesByType(DishType dishType) {
-        return (ArrayList<Dish>) menu.stream()
+    /**
+     *
+     * @param dishType Type of dish to filter from menu
+     * @return
+     */
+    public static ArrayList<Dish> getDishesByType(DishType dishType) {
+        return (ArrayList<Dish>) MENU.stream()
                 .filter(d -> d.getDishType().equals(dishType))
                 .collect(Collectors.toList());
     }
 
-    public ArrayList<Dish> getDishes() {
-        return menu;
-    }
-
-    public void setDishes(ArrayList<Dish> dishes) {
-        this.menu = dishes;
+    public List<Dish> getDishes() {
+        return MENU;
     }
 
     public ArrayList<Table> getTables() {
@@ -143,36 +258,8 @@ public final class Restaurant {
         this.tables = tables;
     }
 
-    public ArrayList<Order> getOrders() {
-        return orders;
-    }
-
-    public void setOrders(ArrayList<Order> orders) {
-        this.orders = orders;
-    }
-
-    public ArrayList<Dish> getMenu() {
-        return menu;
-    }
-
-    public void setMenu(ArrayList<Dish> menu) {
-        this.menu = menu;
-    }
-
-    public Waiter getWaiter1() {
-        return waiter1;
-    }
-
-    public void setWaiter1(Waiter waiter1) {
-        this.waiter1 = waiter1;
-    }
-
-    public Waiter getWaiter2() {
-        return waiter2;
-    }
-
-    public void setWaiter2(Waiter waiter2) {
-        this.waiter2 = waiter2;
+    public List<Dish> getMenu() {
+        return MENU;
     }
 
     public Cashier getCashier() {
@@ -191,23 +278,37 @@ public final class Restaurant {
         this.cash = cash;
     }
 
-    public static void main(String[] args) {
-        Restaurant r = new Restaurant();
-        r.getTables().forEach(System.out::println);
-
-        Client c1 = new Client(1, "Gabo", "F");
-        Client c2 = new Client(1, "Gabo", "F");
-
-        Group g = new Group();
-        g.getClients().add(c1);
-        g.getClients().add(c2);
-
-        for (int i = 0; i < 10; i++) {
-            System.out.println("================= Order =========================");
-            r.generatePersonalOrder().forEach(System.out::println);
-            System.out.println("================= Order =========================");
-
-        }
-
+    public Kitchen getKitchen() {
+        return kitchen;
     }
+
+    public void setKitchen(Kitchen kitchen) {
+        this.kitchen = kitchen;
+    }
+
+    public List<Waiter> getWaiters() {
+        return waiters;
+    }
+
+    public void setWaiters(List<Waiter> waiters) {
+        this.waiters = waiters;
+    }
+
+    public Map<Integer, List<Order>> getOrdersPerDay() {
+        return ordersPerDay;
+    }
+
+    public void setOrdersPerDay(Map<Integer, List<Order>> ordersPerDay) {
+        this.ordersPerDay = ordersPerDay;
+    }
+
+    public Queue<List<Client>> getClientsRow() {
+        return clientsRow;
+    }
+
+    public void setClientsRow(Queue<List<Client>> clientsRow) {
+        this.clientsRow = clientsRow;
+    }
+    
+    
 }

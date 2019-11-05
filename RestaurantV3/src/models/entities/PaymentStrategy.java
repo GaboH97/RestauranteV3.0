@@ -2,12 +2,21 @@ package models.entities;
 
 /**
  *
- * @author Lenovo
+ * @author Gabriel Huertas
  */
 public enum PaymentStrategy {
     
+    /**
+     * Each client pays for what he/she has consumed
+     */
     AW("American Way"),
+    /**
+     * One client pays for everyone
+     */
     OFE("One-For-Everyone"),
+    /**
+     * All clients payments are equally distributed
+     */
     AFE("All-for-Everyone");
     
     private String name;

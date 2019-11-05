@@ -2,7 +2,10 @@ package models.entities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -11,39 +14,39 @@ import java.util.Random;
 public class PersonalOrder {
 
     private Client client;
-    private HashMap<Dish, Integer> rankedDishes;
-    private PaymentType paymentType;
+    private ArrayList<OrderedDish> orderedDishes;
+    private int consumptionTime;
 
-    public PersonalOrder(Client client, HashMap<Dish, Integer> rankedDishes) {
+    public PersonalOrder(Client client, ArrayList<Dish> selectedDishes) {
         this.client = client;
-        this.rankedDishes = rankedDishes;
+        this.orderedDishes = new ArrayList<>();
+        setSelectedDishes(selectedDishes);
     }
 
     public PersonalOrder(Client client) {
         this.client = client;
-        this.rankedDishes = new HashMap<>();
-    }
-
-    public void setDishes(ArrayList<Dish> dishes) {
-        rankedDishes.keySet().addAll(dishes);
+        this.orderedDishes = new ArrayList<>();
     }
 
     public void rankDishes() {
-        rankedDishes.entrySet().stream().map((entry) -> entry.getKey()).forEachOrdered((dish) -> {
-            rankedDishes.compute(dish, (k, v) -> new Random().nextInt(6));
-        });
+        Random r = new Random();
+        orderedDishes.forEach(o -> o.setRating(r.nextInt(6)));
     }
-    
+
     /**
-     * 
+     *
      * @return Total for ordered dishes
      */
     public double getTotal() {
-        return rankedDishes.entrySet()
+        return orderedDishes
                 .stream()
-                .mapToDouble((entry) -> entry.getKey().getPrice())
+                .mapToDouble(d -> d.getDish().getPrice())
                 .sum();
     }
+    
+     public void setSelectedDishes(ArrayList<Dish> selectedDishes) {
+         orderedDishes.addAll(selectedDishes.stream().map(sd-> new OrderedDish(sd)).collect(Collectors.toList()));
+     }
 
     public Client getClient() {
         return client;
@@ -53,19 +56,35 @@ public class PersonalOrder {
         this.client = client;
     }
 
-    public HashMap<Dish, Integer> getRankedDishes() {
-        return rankedDishes;
+    public ArrayList<OrderedDish> getOrderedDishes() {
+        return orderedDishes;
     }
 
-    public void setRankedDishes(HashMap<Dish, Integer> rankedDishes) {
-        this.rankedDishes = rankedDishes;
+    public void setOrderedDishes(ArrayList<OrderedDish> orderedDishes) {
+        this.orderedDishes = orderedDishes;
     }
 
-    public PaymentType getPaymentType() {
-        return paymentType;
+    public int getConsumptionTime() {
+        return consumptionTime;
     }
 
-    public void setPaymentType(PaymentType paymentType) {
-        this.paymentType = paymentType;
+    public void setConsumptionTime(int consumptionTime) {
+        this.consumptionTime = consumptionTime;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Client: ").append(client).append(System.getProperty("line.separator"))
+                .append("\t").append("Dishes: ").append(System.getProperty("line.separator"));
+        orderedDishes
+                .forEach(od -> builder.append("\tDish: ").append(od.getDish().getName())
+                .append(" Dish Type: ").append(od.getDish().getDishType())
+                .append(System.getProperty("line.separator")));
+
+        return builder.toString();
+    }
+
+   
+
 }

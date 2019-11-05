@@ -6,7 +6,7 @@ package models.entities;
  */
 public class Table {
     
-    private static final int MAX_CAPACITY = 5;
+    public static final int MAX_CAPACITY = 5;
     public static final int CLEAN_DURATION = 5; //In minutes
     
     private static int TABLE_COUNT = 1;
@@ -16,6 +16,10 @@ public class Table {
     public Table() {
         this.id = TABLE_COUNT++;
         this.available = true;
+    }
+    
+    public void occupy(){
+        this.available = false;
     }
     
     public boolean isAvailable() {
