@@ -22,6 +22,10 @@ public class Table {
         this.available = false;
     }
     
+    public void quit(){
+        this.available = true;
+    }
+    
     public boolean isAvailable() {
         return available;
     }

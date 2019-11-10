@@ -33,7 +33,14 @@ public class Cash {
         cashPaymentsQueue = new LinkedList<>();
         creditCardPaymentsQueue = new LinkedList<>();
     }
-
+    
+    /**
+     * 
+     * @param client
+     * @param orderTotal
+     * @param paymentStrategy
+     * @return 
+     */
     public Payment generatePayment(Client client, double orderTotal, PaymentStrategy paymentStrategy) {
         return new Payment(client, orderTotal, paymentStrategy);
     }
@@ -45,10 +52,19 @@ public class Cash {
     public void addPayment(Payment payment) {
         this.payments.add(payment);
         if(payment.getPaymentType().equals(PaymentType.C)){
-            cashPaymentsQueue = new LinkedList<>();
+            cashPaymentsQueue.add(payment);
         }else{
-            creditCardPaymentsQueue = new LinkedList<>();
+            creditCardPaymentsQueue.add(payment);
         }
+    }
+    
+    
+    /**
+     * 
+     * @return 
+     */
+    public double getTotalIncome(){
+        return this.payments.stream().mapToDouble(p->p.getOrderTotal()).sum();
     }
     
     /**

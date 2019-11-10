@@ -1,5 +1,6 @@
 package models.entities;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -13,46 +14,58 @@ public class Waiter {
 
     private int id;
     private String name;
-    private double rate;
+    private ArrayList<Integer> serviceRates;
     private WaiterState state;
     private Queue<Order> takenOrders;
-    
-
-    public Waiter(int id, String name, double rate) {
-        this.id = id;
-        this.name = name;
-        this.rate = rate;
-        this.takenOrders = new LinkedList<>();
-    }
 
     public Waiter(int id, String name) {
         this.id = id;
         this.name = name;
-        this.rate = 0d;
+        this.serviceRates = new ArrayList<>();
+        this.takenOrders = new LinkedList<>();
+        this.serviceRates = new ArrayList<>();
+        this.state = WaiterState.AVAILABLE;
     }
- 
+
+    public void attendTables() {
+        //Cambia el estado del mesero a atentiendo
+        attend();
+    }
+
     /**
-     * 
+     *
      * @return true if the waiter has only taken 3 orders, otherwise false
      */
     public boolean canTakeOrder() {
         return takenOrders.size() < 3;
     }
-    
+
     /**
-     * 
-     * @param order 
+     *
+     * @param order
      */
-    public void takeOrder(Order order){
+    public void takeOrder(Order order) {
         takenOrders.add(order);
     }
-    
+
     /**
-     * 
+     *
      * @return The first order (if present) taken by the waiter in FIFO style
      */
-    public Order leaveOrder(){
+    public Order leaveOrder() {
         return takenOrders.poll();
+    }
+
+    public void addServiceRate(Integer serviceRate) {
+        serviceRates.add(serviceRate);
+    }
+
+    /**
+     *
+     * @return Average service rate of this waiter
+     */
+    public Double getAverageRate() {
+        return serviceRates.stream().mapToInt(r -> r).summaryStatistics().getAverage();
     }
 
     public int getId() {
@@ -71,12 +84,12 @@ public class Waiter {
         this.name = name;
     }
 
-    public double getRate() {
-        return rate;
+    public ArrayList<Integer> getServiceRates() {
+        return serviceRates;
     }
 
-    public void setRate(double rate) {
-        this.rate = rate;
+    public void setServiceRates(ArrayList<Integer> serviceRates) {
+        this.serviceRates = serviceRates;
     }
 
     public Queue<Order> getTakenOrders() {
@@ -94,4 +107,17 @@ public class Waiter {
     public void setState(WaiterState state) {
         this.state = state;
     }
+
+    public void attend() {
+        setState(WaiterState.ATTENDING_TABLE);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Taken Orders").append(System.getProperty("line.separator"));
+        takenOrders.forEach(o -> builder.append("\t").append(o.toString()).append(System.getProperty("line.separator")));
+        return builder.toString();
+    }
+
 }

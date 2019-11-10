@@ -1,10 +1,7 @@
 package models.entities;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -16,10 +13,17 @@ public class PersonalOrder {
     private Client client;
     private ArrayList<OrderedDish> orderedDishes;
     private int consumptionTime;
-
-    public PersonalOrder(Client client, ArrayList<Dish> selectedDishes) {
+    
+    /**
+     * 
+     * @param client Client who has placed its order
+     * @param selectedDishes Selected dishes
+     * @param consumptionTime 
+     */
+    public PersonalOrder(Client client, ArrayList<Dish> selectedDishes, int consumptionTime) {
         this.client = client;
         this.orderedDishes = new ArrayList<>();
+        this.consumptionTime = consumptionTime;
         setSelectedDishes(selectedDishes);
     }
 
@@ -27,12 +31,42 @@ public class PersonalOrder {
         this.client = client;
         this.orderedDishes = new ArrayList<>();
     }
-
+    
     public void rankDishes() {
         Random r = new Random();
         orderedDishes.forEach(o -> o.setRating(r.nextInt(6)));
     }
+    
+    /**
+     * Check if this personal order is ready to be served
+     * 
+     * @return true if this personal order is ready, otherwise, false
+     */
+    public boolean isReady(){
+       return orderedDishes.stream()
+               .allMatch(o->o.getOrderedDishState().equals(OrderedDishState.PREPARED));
+    }
 
+    /**
+     * Set all ordered dishes' state to eating
+     */
+    public void eat() {
+        orderedDishes.forEach(od -> od.setOrderedDishState(OrderedDishState.EATING));
+    }
+
+    /**
+     * Set all ordered dishes' state to consumed
+     */
+    public void finish() {
+        orderedDishes.forEach(od -> od.setOrderedDishState(OrderedDishState.CONSUMED));
+    }
+    
+    public void consumeOrder(){
+        eat();
+        //AQUÍ VA EL TIEMPO QUE SE DEMORA EN CONSUMIR LA ORDEN
+        finish();
+    }
+    
     /**
      *
      * @return Total for ordered dishes
@@ -43,10 +77,10 @@ public class PersonalOrder {
                 .mapToDouble(d -> d.getDish().getPrice())
                 .sum();
     }
-    
-     public void setSelectedDishes(ArrayList<Dish> selectedDishes) {
-         orderedDishes.addAll(selectedDishes.stream().map(sd-> new OrderedDish(sd)).collect(Collectors.toList()));
-     }
+
+    public void setSelectedDishes(ArrayList<Dish> selectedDishes) {
+        orderedDishes.addAll(selectedDishes.stream().map(sd -> new OrderedDish(sd)).collect(Collectors.toList()));
+    }
 
     public Client getClient() {
         return client;
@@ -84,7 +118,5 @@ public class PersonalOrder {
 
         return builder.toString();
     }
-
-   
 
 }

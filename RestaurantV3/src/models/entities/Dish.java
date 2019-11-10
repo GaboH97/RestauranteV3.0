@@ -9,9 +9,9 @@ public class Dish {
     private String name;
     private DishType dishType;
     private double price;
-    private double cookingTime; //In minutes
+    private int cookingTime; //In minutes
 
-    public Dish(String name, DishType dishType, double price, double cookingTime) {
+    public Dish(String name, DishType dishType, double price, int cookingTime) {
         this.name = name;
         this.dishType = dishType;
         this.price = price;
@@ -46,7 +46,7 @@ public class Dish {
         return cookingTime;
     }
 
-    public void setCookingTime(double cookingTime) {
+    public void setCookingTime(int cookingTime) {
         this.cookingTime = cookingTime;
     }
 

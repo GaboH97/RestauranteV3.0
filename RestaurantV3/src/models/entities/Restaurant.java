@@ -2,12 +2,15 @@ package models.entities;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
-import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -18,40 +21,40 @@ import java.util.stream.IntStream;
 public final class Restaurant {
 
     //================= ATTRIBUTES ==========================
-    
-    public static List<Dish> MENU =  Arrays.asList(
+    private TimeConstants time;
+
+    public static List<Dish> MENU = Arrays.asList(
             //--------------------- MAIN DISHES --------------------------
-            new Dish("Greek Chicken Pasta", DishType.MAIN, 15.10, 35),
-            new Dish("Tuscan Bean Soup", DishType.MAIN, 15.10, 20),
-            new Dish("Yakisoba Noodles", DishType.MAIN, 15.10, 15),
-            new Dish("6-Ingredient Vegan Chickpea Curry", DishType.MAIN, 0, 30),
-            new Dish("Russian Beef Stroganoff", DishType.MAIN, 0, 30),
+            new Dish("Greek Chicken Pasta", DishType.MAIN, 25, 35),
+            new Dish("Tuscan Bean Soup", DishType.MAIN, 20, 20),
+            new Dish("Yakisoba Noodles", DishType.MAIN, 12, 15),
+            new Dish("6-Ingredient Vegan Chickpea Curry", DishType.MAIN, 18, 30),
+            new Dish("Russian Beef Stroganoff", DishType.MAIN, 15, 30),
             //--------------------- ENTREÉS --------------------------
-            new Dish("Scallops with sweet corn puree, prosciutto and lemon butter", DishType.ENTREE, 0, 10),
-            new Dish("Goat's cheese pissaladiere tarts", DishType.ENTREE, 0, 5),
-            new Dish("Antipasto garlic bread", DishType.ENTREE, 0, 5),
-            new Dish("Crisp-fried cheese ravioli", DishType.ENTREE, 0, 8),
-            new Dish("Crab cakes with dill mayonnaise", DishType.ENTREE, 0, 10),
+            new Dish("Scallops with sweet corn puree, prosciutto and lemon butter", DishType.ENTREE, 5, 10),
+            new Dish("Goat's cheese pissaladiere tarts", DishType.ENTREE, 5, 5),
+            new Dish("Antipasto garlic bread", DishType.ENTREE, 3.5, 5),
+            new Dish("Crisp-fried cheese ravioli", DishType.ENTREE, 10, 8),
+            new Dish("Crab cakes with dill mayonnaise", DishType.ENTREE, 8, 10),
             //--------------------- DESSERTS --------------------------
-            new Dish("OREO Cookie Split", DishType.DESSERT, 0, 5),
-            new Dish("Creamy Mochaccino Mousse", DishType.DESSERT, 0, 5),
-            new Dish("Peach Melba Icy Delight", DishType.DESSERT, 0, 8),
-            new Dish("Old Fashioned Sour Cream Doughnuts", DishType.DESSERT, 0, 10),
-            new Dish("Meyer Lemon Bars", DishType.DESSERT, 0, 14),
-            new Dish("Pavlova With Blueberry Jam", DishType.DESSERT, 0, 10),
-            new Dish("Banana Pudding Parfaits", DishType.DESSERT, 0, 8),
-            new Dish("Strawberry, Currant And Mint Tart With Mascarpone", DishType.DESSERT, 0, 10),
-            new Dish("Green Tea Panna Cotta", DishType.DESSERT, 0, 15),
-            new Dish("Strawberry Mousse", DishType.DESSERT, 0, 10)
+            new Dish("OREO Cookie Split", DishType.DESSERT, 1.5, 5),
+            new Dish("Creamy Mochaccino Mousse", DishType.DESSERT, 2.5, 5),
+            new Dish("Peach Melba Icy Delight", DishType.DESSERT, 3, 8),
+            new Dish("Old Fashioned Sour Cream Doughnuts", DishType.DESSERT, 3.5, 10),
+            new Dish("Meyer Lemon Bars", DishType.DESSERT, 6, 14),
+            new Dish("Pavlova With Blueberry Jam", DishType.DESSERT, 3, 10),
+            new Dish("Banana Pudding Parfaits", DishType.DESSERT, 2, 8),
+            new Dish("Strawberry, Currant And Mint Tart With Mascarpone", DishType.DESSERT, 4, 10),
+            new Dish("Green Tea Panna Cotta", DishType.DESSERT, 2.5, 15),
+            new Dish("Strawberry Mousse", DishType.DESSERT, 5.5, 10)
     );
 
     private ArrayList<Table> tables;
     private Kitchen kitchen;
     private List<Waiter> waiters;
+    private List<Order> orders;
     private Cashier cashier;
     private Cash cash;
-
-    private Map<Integer, List<Order>> ordersPerDay;
 
     /**
      * Clients row waiting to be attended
@@ -65,7 +68,10 @@ public final class Restaurant {
 
     private Restaurant() {
 
+        time = new TimeConstants();
+
         this.kitchen = new Kitchen();
+        this.orders = new ArrayList<>();
         this.cashier = new Cashier();
         this.cash = new Cash(cashier);
 
@@ -73,7 +79,6 @@ public final class Restaurant {
         this.waiters = new ArrayList<>();
 
         this.clientsRow = new LinkedList<>();
-        this.ordersPerDay = new TreeMap<>();
 
         setUp();
     }
@@ -94,6 +99,30 @@ public final class Restaurant {
      */
     public void start() {
 
+        //MIRA QUE EL RELOJ DE SISTEMA PARA UN DÍA SEA MENOR A LA DURACIÓN
+        //LA JORNADA LABORAL
+        int groups = 14;
+        int tablesOccupied = 0;
+        while (tablesOccupied < groups) {
+            int timeBetweenArrivals = new Random().ints(15, 20).findFirst().getAsInt();
+            List<Client> group = clientsArrival();
+
+            time.advance(timeBetweenArrivals);
+            System.out.println("Grupo llegó en el instante " + time.getDayCounter());
+
+            Waiter waiter = getAvailableWaiter();
+
+            Table table = getAvailableTable();
+            table.occupy();
+            Order order = new Order(table);
+            order.createPersonalOrders(group);
+            waiter.takeOrder(order);
+            order.finish(waiter);
+            tablesOccupied++;
+
+        }
+        waiters.forEach(w -> w.getTakenOrders().forEach(orders::add));
+        System.out.println("orders " + orders.size());
     }
 
     /**
@@ -108,13 +137,13 @@ public final class Restaurant {
                 .mapToObj(x -> new Client())
                 .collect(Collectors.toList());
     }
-    
+
     /**
-     * 
+     *
      * @return Any Waiter whose state is available, otherwise null
      */
-    public Waiter getAvailableWaiter(){
-       return waiters.stream()
+    public Waiter getAvailableWaiter() {
+        return waiters.stream()
                 .filter(w -> w.getState().equals(WaiterState.AVAILABLE))
                 .findAny().orElse(null);
     }
@@ -207,8 +236,8 @@ public final class Restaurant {
         /**
          * Complete menu with one of these two options
          *
-         * 1. One entreé and up to two desserts 
-         * 2. One entreé or up to two desserts
+         * 1. One entreé and up to two desserts 2. One entreé or up to two
+         * desserts
          */
         if (entreeAndDessert) {
 
@@ -246,6 +275,126 @@ public final class Restaurant {
                 .collect(Collectors.toList());
     }
 
+    public boolean hasToWaitInQueue() {
+        return getAvailableTable() == null;
+    }
+
+    public Map<Dish, Long> getOrderedDishesWithQuantity() {
+        return getAllDishes().stream()
+                .collect(
+                        Collectors.groupingBy(
+                                Function.identity(),
+                                Collectors.counting())
+                );
+        //return orders.stream().collect(Collectors.groupingBy(o -> o,Collectors.counting()));
+    }
+
+    /**
+     * @return All ordered dishes for this workday
+     */
+    public List<Dish> getAllDishes() {
+        List<Dish> allOrderedDishes = new ArrayList<>();
+        this.orders.forEach((order) -> {
+            order.getPersonalOrders().forEach((personalOrder) -> {
+                allOrderedDishes.addAll(personalOrder.getOrderedDishes()
+                        .stream()
+                        .map(od -> od.getDish())
+                        .collect(Collectors.toList()));
+            });
+        });
+        return allOrderedDishes;
+    }
+
+    public Map<Dish, Long> getBestSellingDishesPerDishType() {
+
+        Map<Dish, Long> bestSellingDishesPerDishType = new HashMap<>();
+        Map<Dish, Long> dishesSold = getOrderedDishesWithQuantity();
+
+        //Get Dish Type values
+        List<DishType> dishTypes = Arrays.asList(DishType.values());
+
+        dishTypes.forEach((DishType dishType) -> {
+
+            //Filter Map entries by dish type
+            Map<Dish, Long> dishesPerType = dishesSold.entrySet()
+                    .stream()
+                    .filter((Map.Entry<Dish, Long> e) -> e.getKey().getDishType().equals(dishType))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+            //Get best selling dish
+            Map.Entry<Dish, Long> max = Collections.max(dishesPerType.entrySet(), Map.Entry.comparingByValue());
+
+            bestSellingDishesPerDishType.put(max.getKey(), max.getValue());
+
+        });
+
+        return bestSellingDishesPerDishType;
+    }
+
+    public Map<Dish, Double> getBestRatedDishesPerDishType() {
+        Map<Dish, Double> bestSellingDishesPerDishType = new HashMap<>();
+        Map<Dish, Double> dishesSold = getDishesWithAverageRate();
+
+        //Get Dish Type values
+        List<DishType> dishTypes = Arrays.asList(DishType.values());
+
+        dishTypes.forEach((DishType dishType) -> {
+
+            //Filter Map entries by dish type
+            Map<Dish, Double> dishesPerType = dishesSold.entrySet()
+                    .stream()
+                    .filter((Map.Entry<Dish, Double> e) -> e.getKey().getDishType().equals(dishType))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+            //Get best selling dish
+            Map.Entry<Dish, Double> max = Collections.max(dishesPerType.entrySet(), Map.Entry.comparingByValue());
+
+            bestSellingDishesPerDishType.put(max.getKey(), max.getValue());
+
+        });
+
+        return bestSellingDishesPerDishType;
+
+    }
+
+    public Map<Dish, Double> getDishesWithAverageRate() {
+        List<OrderedDish> allOrderedDishes = getAllOrderedDishes();
+        Map<Dish, Double> dishesWithAverageRate = allOrderedDishes
+                .stream()
+                .collect(
+                        Collectors.groupingBy(
+                                o -> o.getDish(),
+                                Collectors.averagingDouble(OrderedDish::getRating)));
+        return dishesWithAverageRate;
+    }
+
+    public List<OrderedDish> getAllOrderedDishes() {
+        List<OrderedDish> orderedDishes = new ArrayList();
+        orders.forEach((order) -> {
+            order.getPersonalOrders().forEach((personalOrder) -> {
+                orderedDishes.addAll(personalOrder.getOrderedDishes());
+            });
+        });
+        return orderedDishes;
+    }
+
+    /**
+     *
+     * @return Best rated Waiter
+     */
+    public Waiter getBestRatedWaiter() {
+        return Collections.max(waiters, Comparator.comparingDouble(Waiter::getAverageRate));
+    }
+    
+    /**
+     * 
+     * @return Number of orders grouped by payment strategy
+     */
+    public Map<PaymentStrategy, Long> getCountOfOrdersByPaymentStrategy() {
+        return orders.stream().collect(Collectors.groupingBy(o -> o.getPaymentStrategy(), Collectors.counting()));
+    }
+
+    //==================== GETTERS & SETTERS ======================
     public List<Dish> getDishes() {
         return MENU;
     }
@@ -294,14 +443,6 @@ public final class Restaurant {
         this.waiters = waiters;
     }
 
-    public Map<Integer, List<Order>> getOrdersPerDay() {
-        return ordersPerDay;
-    }
-
-    public void setOrdersPerDay(Map<Integer, List<Order>> ordersPerDay) {
-        this.ordersPerDay = ordersPerDay;
-    }
-
     public Queue<List<Client>> getClientsRow() {
         return clientsRow;
     }
@@ -309,6 +450,12 @@ public final class Restaurant {
     public void setClientsRow(Queue<List<Client>> clientsRow) {
         this.clientsRow = clientsRow;
     }
-    
-    
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
+    }
 }

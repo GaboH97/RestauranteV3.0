@@ -6,7 +6,6 @@
 package models.entities;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -19,12 +18,16 @@ public class Kitchen {
 
     private List<Chef> chefs;
     private Queue<Order> orders;
+    private List<Order> readyOrders;
 
     public Kitchen() {
         chefs = new ArrayList<>();
         orders = new LinkedList<>();
+        readyOrders = new ArrayList<>();
         setUp();
     }
+    
+    
 
     /**
      * Method that adds orders to the pending orders list
@@ -39,17 +42,16 @@ public class Kitchen {
         orders.add(order);
     }
     
-    private void prepareOrder(){
-        Order order = orders.poll();
-    }
-
+    /**
+     * Adds chefs to the chef list
+     */
     public void setUp() {
 
         Chef chef1 = new Chef(0, "Jorge", 0.90);
-        ArrayList<CookingSkill> cookingSkills = new ArrayList<>();
-        cookingSkills.add(CookingSkill.ENTREE);
-        cookingSkills.add(CookingSkill.MAIN);
-        cookingSkills.add(CookingSkill.DESSERT);
+        ArrayList<DishType> cookingSkills = new ArrayList<>();
+        cookingSkills.add(DishType.ENTREE);
+        cookingSkills.add(DishType.MAIN);
+        cookingSkills.add(DishType.DESSERT);
 
         chef1.setCookingSkills(cookingSkills);
         chefs.add(chef1);
@@ -57,13 +59,15 @@ public class Kitchen {
         cookingSkills = new ArrayList<>();
 
         Chef chef2 = new Chef(0, "Pedro", 0.88);
-        cookingSkills.add(CookingSkill.ENTREE);
-        cookingSkills.add(CookingSkill.MAIN);
+        cookingSkills.add(DishType.ENTREE);
+        cookingSkills.add(DishType.MAIN);
 
         chef2.setCookingSkills(cookingSkills);
         chefs.add(chef2);
     }
 
+    //===================== GETTERS & SETTERS =========================
+    
     public List<Chef> getChefs() {
         return chefs;
     }
@@ -78,5 +82,13 @@ public class Kitchen {
 
     public void setOrders(Queue<Order> orders) {
         this.orders = orders;
+    }
+
+    public List<Order> getReadyOrders() {
+        return readyOrders;
+    }
+
+    public void setReadyOrders(List<Order> readyOrders) {
+        this.readyOrders = readyOrders;
     }
 }

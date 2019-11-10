@@ -12,7 +12,7 @@ public class Chef {
 
     private int id;
     private String name;
-    private ArrayList<CookingSkill> cookingSkills;
+    private ArrayList<DishType> cookingSkills;
     private double successRate;
 
     public Chef(int id, String name, double successRate) {
@@ -22,11 +22,11 @@ public class Chef {
         this.successRate = successRate;
     }
 
-    public void Cook(Dish dish) {
-        //TODO
+    public void Cook(OrderedDish orderedDish) {
+        orderedDish.setOrderedDishState(OrderedDishState.PREPARING);
     }
 
-    public boolean hasSkill(CookingSkill cookingSkill) {
+    public boolean hasSkill(DishType cookingSkill) {
         return cookingSkills.contains(cookingSkill);
     }
 
@@ -46,11 +46,11 @@ public class Chef {
         this.name = name;
     }
 
-    public ArrayList<CookingSkill> getCookingSkills() {
+    public ArrayList<DishType> getCookingSkills() {
         return cookingSkills;
     }
 
-    public void setCookingSkills(ArrayList<CookingSkill> cookingSkills) {
+    public void setCookingSkills(ArrayList<DishType> cookingSkills) {
         this.cookingSkills = cookingSkills;
     }
 

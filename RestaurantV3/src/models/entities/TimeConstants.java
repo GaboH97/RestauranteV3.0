@@ -11,5 +11,40 @@ package models.entities;
  */
 public class TimeConstants {
 
-    public static final int WORK_DAY_DURATION = 4800; //In minutes
+    public static final int WORK_DAY_DURATION = 480; //In minutes
+
+    private int globalClockCounter;
+    private int dayCounter;
+    private int dayCount;
+    private int weekCount;
+
+    public TimeConstants() {
+        globalClockCounter = 0;
+        dayCounter = 0;
+    }
+    
+    public void advanceDay(){
+        this.dayCount++;
+    }
+
+    public void advance(int minutes) {
+        dayCounter += minutes;
+    }
+
+    public int getGlobalClockCounter() {
+        return globalClockCounter;
+    }
+
+    public void setGlobalClockCounter(int globalClockCounter) {
+        this.globalClockCounter = globalClockCounter;
+    }
+
+    public int getDayCounter() {
+        return dayCounter;
+    }
+
+    public void setDayCounter(int dayCounter) {
+        this.dayCounter = dayCounter;
+    }
+
 }

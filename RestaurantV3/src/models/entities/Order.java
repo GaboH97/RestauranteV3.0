@@ -1,10 +1,8 @@
 package models.entities;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -106,7 +104,7 @@ public class Order {
 
     /**
      *
-     * @return A randomly choosen Payment Strategy
+     * @return A randomly chosen Payment Strategy
      */
     public PaymentStrategy choosePaymentStrategy() {
         int num = new Random().nextInt(3);
@@ -123,7 +121,7 @@ public class Order {
     }
 
     /**
-     *
+     * Represents total time to
      * @return The maximum consumption time among clients through personal order
      */
     public int maxTimeToConsume() {
@@ -166,7 +164,18 @@ public class Order {
                 break;
         }
     }
-
+    
+    /**
+     * Ends consumption, rank dishes per personal order and rate waiter service
+     * @param waiter Waiter who took the order
+     */
+    public void finish(Waiter waiter){
+        personalOrders.forEach(PersonalOrder::rankDishes);
+    }
+    
+    //============ GETTERS & SETTERS ================
+    
+    
     public int getId() {
         return id;
     }
